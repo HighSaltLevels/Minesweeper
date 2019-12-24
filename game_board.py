@@ -1,8 +1,6 @@
 import random
 import sys
-
-class InvalidGameBoardException(Exception):
-    ''' Exception for when invalid parameters are passed to create a gameboard'''
+from exceptions import InvalidGameBoardException
 
 class GameBoard(object):
 
@@ -77,7 +75,6 @@ class GameBoard(object):
 
     def get_right_value(self, space):
         if self.is_right_border(space):
-            print('space = {}'.format(space))
             return None
 
         value_pos = space + 1
