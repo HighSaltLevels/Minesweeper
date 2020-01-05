@@ -7,8 +7,8 @@ class GameBoard(object):
     def __init__(self, rows, cols, mines):
         if mines >= (rows*cols):
             raise InvalidGameBoardException('Too many mines. You must have 1 less mine than the total number of spaces')
-        self.rows = rows
-        self.cols = cols
+        self.rows = int(rows)
+        self.cols = int(cols)
         self.size = rows*cols
         self.num_spaces = self.size - 1
         self.mines = mines
@@ -18,7 +18,7 @@ class GameBoard(object):
     def generate_board(self):
         mine_positions = random.sample(range(0, self.rows*self.cols), self.mines)
         for mine_position in mine_positions:
-            self.game_board[mine_position] = -1
+            self.game_board[mine_position] = 'mine'
 
         for space in range(self.size):
             if not self.game_board[space]:
@@ -28,7 +28,7 @@ class GameBoard(object):
         num_mines = 0
         adjacent_space_values = self.get_adjacent_space_values(space)
         for adjacent_space_value in adjacent_space_values:
-            if adjacent_space_value == -1:
+            if adjacent_space_value == 'mine':
                 num_mines += 1
 
         return num_mines
@@ -127,13 +127,3 @@ class GameBoard(object):
 
     def clear_board(self):
         self.game_board = [None for _ in range(self.size)]
-
-    def display_board(self):
-        space_num = 0
-        for row in range(self.rows):
-            sys.stdout.write('[')
-            for col in range(self.cols):
-                sys.stdout.write(' {} '.format(self.game_board[space_num]))
-                space_num += 1
-            sys.stdout.write(']\n')
-        sys.stdout.flush()

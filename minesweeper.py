@@ -17,7 +17,6 @@ def main(args):
         sys.exit(1)
 
     board.generate_board()
-    board.display_board()
 
     game_renderer = GameRenderer(board)
     game_renderer.play_game()
