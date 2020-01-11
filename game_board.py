@@ -31,7 +31,7 @@ class GameBoard(object):
             if adjacent_space_value == 'mine':
                 num_mines += 1
 
-        return num_mines
+        return str(num_mines * -1) # Use negative numbers to represent unkown number spaces
 
     def get_adjacent_space_values(self, space):
         adjacent_space_values = []

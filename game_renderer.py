@@ -38,20 +38,27 @@ class GameRenderer(object):
                     continue
 
                 value = self.game_board.game_board[position]
-                if value == 'mine' or value >= 0:
-                    sys.stdout.write('|_')
-                elif value == 'flag':
+                if 'flag' in value:
                     sys.stdout.write('|?')
+                elif value == 'mine' or int(value) <= 0:
+                    sys.stdout.write('|_')
                 else:
                     sys.stdout.write('|{}'.format(value * -1))
 
                 position += 1
             sys.stdout.write('|\n')
-        sys.stdout.write('Press \'q\' at any time to quit')
+        self.print_instructions()
         sys.stdout.flush()
 
     def clear_board(self):
         os.system('clear')
+
+    def print_instructions(self):
+        sys.stdout.write('Your cursor is \'#\'\n')
+        sys.stdout.write('Use the arrow keys to move around.\n')
+        sys.stdout.write('Place a flag (?) by pressing Backspace.\n')
+        sys.stdout.write('Make a guess by pressing Enter.\n')
+        sys.stdout.write('Press \'q\' at any time to quit.')
 
     def check_game_status(self):
         fd = sys.stdin.fileno()
@@ -96,6 +103,12 @@ class GameRenderer(object):
         return 2
 
     def set_flag(self):
+        if 'flag' in self.game_board.game_board[self.cursor_pos]:
+            original = self.game_board.game_board[self.cursor_pos][4:]
+            self.game_board.game_board[self.cursor_pos] = original
+        else:
+            original = self.game_board.game_board[self.cursor_pos]
+            self.game_board.game_board[self.cursor_pos] = 'flag' + original
         return 2
 
     def quit_game(self):
