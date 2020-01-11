@@ -125,5 +125,11 @@ class GameBoard(object):
     def is_right_border(self, space):
         return (space % self.cols) == (self.cols - 1)
 
+    def is_top_border(self, space):
+        return (space - self.cols) < 0
+
+    def is_bottom_border(self, space):
+        return (space + self.cols) > self.num_spaces
+
     def clear_board(self):
         self.game_board = [None for _ in range(self.size)]

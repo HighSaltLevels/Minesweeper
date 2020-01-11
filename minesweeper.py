@@ -2,7 +2,6 @@
 import sys
 import argparse
 from exceptions import InvalidGameBoardException
-from exceptions import NoKeyboardException
 from game_board import GameBoard
 from game_renderer import GameRenderer
 
@@ -22,14 +21,11 @@ def main(args):
     game_renderer = GameRenderer(board)
     try:
         game_renderer.play_game()
-    except NoKeyboardException:
-        print('No keyboard detected. A keyboard is required to play')
-        sys.exit(1)
     except PermissionError:
         print('You must play this game as root (or your user must be part of the input group)')
         sys.exit(1)
 
-    print('Thanks for playing :)')
+    print('\nThanks for playing :)')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Terminal Minesweeper Game')

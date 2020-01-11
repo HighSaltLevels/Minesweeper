@@ -1,29 +1,35 @@
+import os
 import sys
+import tty
+import termios
 import time
-from inputs import get_key
-from inputs import UnpluggedError
-from exceptions import NoKeyboardException
 
 class GameRenderer(object):
 
     def __init__(self, game_board):
         self.game_board = game_board
         self.cursor_pos = 0
-        self.event_dict = {'KEY_UP':         self.move_up,
-                           'KEY_RIGHT':      self.move_right,
-                           'KEY_DOWN':       self.move_down,
-                           'KEY_LEFT':       self.move_left,
-                           'KEY_ENTER':      self.make_guess,
-                           'KEY_RIGHTSHIFT': self.set_flag,
-                           'KEY_LEFTSHIFT':  self.set_flag} 
+        self.char_dict = {b'A'   : self.move_up,
+                          b'B'   : self.move_down,
+                          b'C'   : self.move_right,
+                          b'D'   : self.move_left,
+                          b'\r'  : self.make_guess,
+                          b'\x7f': self.set_flag,
+                          b'q'   : self.quit_game} 
 
     def play_game(self):
         self.display_board()
-        while self.check_game_status():
-            time.sleep(0.1)
+        keep_playing = 1
+        while keep_playing:
+            keep_playing = self.check_game_status()
+            if keep_playing == 2:
+                self.display_board()
+            time.sleep(0.01)
+        self.clear_board()
 
     def display_board(self):
         position = 0
+        self.clear_board()
         for _ in range(self.game_board.rows):
             for _ in range(self.game_board.cols):
                 if position == self.cursor_pos:
@@ -41,43 +47,56 @@ class GameRenderer(object):
 
                 position += 1
             sys.stdout.write('|\n')
+        sys.stdout.write('Press \'q\' at any time to quit')
         sys.stdout.flush()
 
+    def clear_board(self):
+        os.system('clear')
+
     def check_game_status(self):
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
         try:
-            events = get_key()
-        except UnpluggedError:
-            raise NoKeyboardException
-        for event in events:
-            if not event.state: # ignore button releases
-                status = True
-                continue
-            try:
-                status = self.event_dict[event.code]()
-            except KeyError:
-                status = True # Don't care about other keyboard presses
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+            readable_char = ch.encode(encoding='UTF-8', errors='strict')
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        try:
+            status = self.char_dict[readable_char]()
+        except KeyError:
+            status = 1 # Don't care about other keyboard presses
         return status
 
     def move_up(self):
-        print('moving up')
-        return True
+        if not self.game_board.is_top_border(self.cursor_pos):
+            self.cursor_pos -= self.game_board.cols
+            return 2
+        return 1
 
     def move_left(self):
-        print('moving left')
-        return True
+        if not self.game_board.is_left_border(self.cursor_pos):
+            self.cursor_pos -= 1
+            return 2
+        return 1
 
     def move_down(self):
-        print('moving down')
-        return True
+        if not self.game_board.is_bottom_border(self.cursor_pos):
+            self.cursor_pos += self.game_board.cols
+            return 2
+        return 1
 
     def move_right(self):
-        print('moving right')
-        return True
+        if not self.game_board.is_right_border(self.cursor_pos):
+            self.cursor_pos += 1
+            return 2
+        return 1
 
     def make_guess(self):
-        print('making guess')
-        return True
+        return 2
 
     def set_flag(self):
-        print('setting flag')
-        return True
+        return 2
+
+    def quit_game(self):
+        return 0
