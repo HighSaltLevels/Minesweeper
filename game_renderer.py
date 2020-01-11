@@ -23,11 +23,13 @@ class GameRenderer(object):
         while keep_playing:
             keep_playing = self.check_game_status()
             if keep_playing == 2:
-                self.display_board()
+                self.display_board(mines=False)
+            if keep_playing == 3:
+                self.display_board(mines=True)
             time.sleep(0.01)
         self.clear_board()
 
-    def display_board(self):
+    def display_board(self, mines=False):
         position = 0
         self.clear_board()
         for _ in range(self.game_board.rows):
@@ -40,10 +42,15 @@ class GameRenderer(object):
                 value = self.game_board.game_board[position]
                 if 'flag' in value:
                     sys.stdout.write('|?')
-                elif value == 'mine' or int(value) <= 0:
+                elif value == 'mine':
+                    if mines:
+                        sys.stdout.write('|*')
+                    else:
+                        sys.stdout.write('|_')
+                elif int(value) <= 0:
                     sys.stdout.write('|_')
                 else:
-                    sys.stdout.write('|{}'.format(value * -1))
+                    sys.stdout.write('|{}'.format(value))
 
                 position += 1
             sys.stdout.write('|\n')
@@ -100,7 +107,19 @@ class GameRenderer(object):
         return 1
 
     def make_guess(self):
+        if self.game_board.game_board[self.cursor_pos] == '0':
+            self.reveal_adjacent_blanks()
+        elif self.game_board.game_board[self.cursor_pos] == 'mine':
+            return 3
+        else:
+            original = self.game_board.game_board[self.cursor_pos]
+            if 'flag' in original:
+                original = original[4:]
+            self.game_board.game_board[self.cursor_pos] = str(-1 * int(original))
         return 2
+
+    def reveal_adjacent_blanks(self):
+        pass
 
     def set_flag(self):
         if 'flag' in self.game_board.game_board[self.cursor_pos]:
