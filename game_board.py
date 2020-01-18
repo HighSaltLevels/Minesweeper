@@ -31,7 +31,7 @@ class GameBoard(object):
             if adjacent_space_value == 'mine':
                 num_mines += 1
 
-        return str(num_mines * -1) # Use negative numbers to represent unkown number spaces
+        return str(num_mines * -1) # Use negative numbers to represent unknown number spaces
 
     def get_adjacent_space_values(self, space):
         adjacent_space_values = []
@@ -45,6 +45,12 @@ class GameBoard(object):
         adjacent_space_values.append(self.get_left_value(space))
 
         return [value for value in adjacent_space_values if value]
+
+    def set_value(self, space, value):
+        self.game_board[space] = value
+
+    def get_value(self, space):
+        return self.game_board[space]
 
     def get_top_left_value(self, space):
         if self.is_left_border(space):
@@ -130,6 +136,40 @@ class GameBoard(object):
 
     def is_bottom_border(self, space):
         return (space + self.cols) > self.num_spaces
+
+    def is_mine(self, space):
+        return self.game_board[space] == 'mine'
+
+    def is_blank(self, space):
+        return self.is_revealed_blank(space) or self.is_unrevealed_space(space)
+
+    def is_revealed_blank(self, space):
+        return self.game_board[space] == ' '
+
+    def is_unrevealed_blank(self, space):
+        return self.game_board[space] == '0'
+
+    def is_revealed(self, space):
+        try:
+            value = int(self.game_board[space])
+            return value > 0
+        except ValueError:
+            return False
+
+    def is_unrevealed(self, space):
+        try:
+            value = int(self.game_board[space])
+            return value < 0
+        except ValueError:
+            return False
+
+    def all_revealed(self):
+        victory = True
+        for space in range(self.size):
+            if self.is_unrevealed(space):
+                return False
+
+        return True
 
     def clear_board(self):
         self.game_board = [None for _ in range(self.size)]

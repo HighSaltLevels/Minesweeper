@@ -26,8 +26,12 @@ class GameRenderer(object):
                 self.display_board(mines=False)
             if keep_playing == 3:
                 self.display_board(mines=True)
+                break
+            if keep_playing == 4:
+                self.display_board(mines=True)
+                sys.stdout.write('\n\nVictory!\n\n')
+                break
             time.sleep(0.01)
-        self.clear_board()
 
     def display_board(self, mines=False):
         position = 0
@@ -39,7 +43,7 @@ class GameRenderer(object):
                     position += 1
                     continue
 
-                value = self.game_board.game_board[position]
+                value = self.game_board.get_value(position)
                 if 'flag' in value:
                     sys.stdout.write('|?')
                 elif value == 'mine':
@@ -47,6 +51,8 @@ class GameRenderer(object):
                         sys.stdout.write('|*')
                     else:
                         sys.stdout.write('|_')
+                elif value == ' ':
+                    sys.stdout.write('| ')
                 elif int(value) <= 0:
                     sys.stdout.write('|_')
                 else:
@@ -76,10 +82,15 @@ class GameRenderer(object):
             readable_char = ch.encode(encoding='UTF-8', errors='strict')
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
         try:
             status = self.char_dict[readable_char]()
         except KeyError:
             status = 1 # Don't care about other keyboard presses
+
+        if self.game_board.all_revealed():
+            status = 4
+
         return status
 
     def move_up(self):
@@ -107,27 +118,41 @@ class GameRenderer(object):
         return 1
 
     def make_guess(self):
-        if self.game_board.game_board[self.cursor_pos] == '0':
+        if self.game_board.get_value(self.cursor_pos) == '0':
             self.reveal_adjacent_blanks()
-        elif self.game_board.game_board[self.cursor_pos] == 'mine':
+        elif self.game_board.get_value(self.cursor_pos) == 'mine':
             return 3
         else:
-            original = self.game_board.game_board[self.cursor_pos]
+            original = self.game_board.get_value(self.cursor_pos)
             if 'flag' in original:
                 original = original[4:]
-            self.game_board.game_board[self.cursor_pos] = str(-1 * int(original))
+            self.game_board.set_value(self.cursor_pos, str(-1 * int(original)))
         return 2
 
     def reveal_adjacent_blanks(self):
-        pass
+        blanks_left = True
+        self.game_board.set_value(self.cursor_pos, ' ')
+        while blanks_left:
+            blanks_left = False
+            for space in range(self.game_board.size):
+                adjacent_spaces = self.game_board.get_adjacent_space_values(space)
+                if ' ' in adjacent_spaces:
+                    if self.game_board.is_unrevealed_blank(space):
+                        self.game_board.set_value(space, ' ')
+                        blanks_left = True
+                    # Reveal numbers adjacent to spaces too
+                    if self.game_board.is_unrevealed(space):
+                        number = -1 * int(self.game_board.get_value(space))
+                        self.game_board.set_value(space, str(number))
+                        blanks_left = True
 
     def set_flag(self):
-        if 'flag' in self.game_board.game_board[self.cursor_pos]:
-            original = self.game_board.game_board[self.cursor_pos][4:]
-            self.game_board.game_board[self.cursor_pos] = original
+        if 'flag' in self.game_board.get_value(self.cursor_pos):
+            original = self.game_board.get_value(self.cursor_pos)[4:]
+            self.game_board.set_value(self.cursor_pos, original)
         else:
-            original = self.game_board.game_board[self.cursor_pos]
-            self.game_board.game_board[self.cursor_pos] = 'flag' + original
+            original = self.game_board.get_value(self.cursor_pos)
+            self.game_board.set_value(self.cursor_pos, 'flag' + original)
         return 2
 
     def quit_game(self):
