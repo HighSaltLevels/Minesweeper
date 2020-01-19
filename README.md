@@ -4,6 +4,8 @@ This is a simple little minesweeper game that can be played in the terminal. Thi
 ## To build and play
 _So far_ I haven't used any non-native python package, but I have a feeling that I'm going to have to at some point. You should be able to just... run it.
 
+**ALSO NOTE:** This will only work on linux. You're welcome to try running it on Windows, but it probably won't work.
+
 To see the help message, you can just run:
 ```
 ./minesweeper.py -h
