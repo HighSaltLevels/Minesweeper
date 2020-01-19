@@ -7,73 +7,80 @@ import time
 class GameRenderer(object):
 
     def __init__(self, game_board):
-        self.game_board = game_board
-        self.cursor_pos = 0
-        self.char_dict = {b'A'   : self.move_up,
-                          b'B'   : self.move_down,
-                          b'C'   : self.move_right,
-                          b'D'   : self.move_left,
-                          b'\r'  : self.make_guess,
-                          b'\x7f': self.set_flag,
-                          b'q'   : self.quit_game} 
+        self._game_board = game_board
+        self._cursor_pos = 0
+        self._char_to_command_dict = {b'A'   : self._move_up,
+                                      b'B'   : self._move_down,
+                                      b'C'   : self._move_right,
+                                      b'D'   : self._move_left,
+                                      b'\r'  : self._make_guess,
+                                      b' ': self._set_flag,
+                                      b'q'   : self._quit_game}
+
+        self.IN_PROGRESS = 0
+        self.LOSS = 1
+        self.VICTORY = 2
+        self.QUIT = 3
+        self.IGNORE = 4
 
     def play_game(self):
-        self.display_board()
-        keep_playing = 1
-        while keep_playing:
-            keep_playing = self.check_game_status()
-            if keep_playing == 2:
-                self.display_board(mines=False)
-            if keep_playing == 3:
-                self.display_board(mines=True)
+        self._display_board() 
+        while True:
+            game_status = self._check_game_status()
+            if game_status == self.IN_PROGRESS:
+                self._display_board(mines=False)
+            elif game_status == self.LOSS:
+                self._display_board(mines=True)
                 break
-            if keep_playing == 4:
-                self.display_board(mines=True)
+            elif game_status == self.VICTORY:
+                self._display_board(mines=True)
                 sys.stdout.write('\n\nVictory!\n\n')
+                sys.stdout.flush()
                 break
+            elif game_status == self.QUIT:
+                break
+
             time.sleep(0.01)
 
-    def display_board(self, mines=False):
+    def _display_board(self, mines=False):
         position = 0
-        self.clear_board()
-        for _ in range(self.game_board.rows):
-            for _ in range(self.game_board.cols):
-                if position == self.cursor_pos:
+        self._clear_board()
+        for _ in range(self._game_board.rows()):
+            for _ in range(self._game_board.cols()):
+                if position == self._cursor_pos:
                     sys.stdout.write('|#')
                     position += 1
                     continue
 
-                value = self.game_board.get_value(position)
-                if 'flag' in value:
+                if self._game_board.spaces[position].is_flag():
                     sys.stdout.write('|?')
-                elif value == 'mine':
-                    if mines:
-                        sys.stdout.write('|*')
-                    else:
-                        sys.stdout.write('|_')
-                elif value == ' ':
+                elif self._game_board.spaces[position].is_mine():
+                    sys.stdout.write('|*') if mines else sys.stdout.write('|_')
+                elif self._game_board.spaces[position].is_revealed() and \
+                    self._game_board.spaces[position].is_blank():
                     sys.stdout.write('| ')
-                elif int(value) <= 0:
+                elif not self._game_board.spaces[position].is_revealed():
                     sys.stdout.write('|_')
                 else:
-                    sys.stdout.write('|{}'.format(value))
+                    value = self._game_board.spaces[position].get_value()
+                    sys.stdout.write(f'|{value}')
 
                 position += 1
             sys.stdout.write('|\n')
-        self.print_instructions()
+        self._print_instructions()
         sys.stdout.flush()
 
-    def clear_board(self):
+    def _clear_board(self):
         os.system('clear')
 
-    def print_instructions(self):
+    def _print_instructions(self):
         sys.stdout.write('Your cursor is \'#\'\n')
         sys.stdout.write('Use the arrow keys to move around.\n')
-        sys.stdout.write('Place a flag (?) by pressing Backspace.\n')
+        sys.stdout.write('Place a flag (?) by pressing the Space Bar.\n')
         sys.stdout.write('Make a guess by pressing Enter.\n')
         sys.stdout.write('Press \'q\' at any time to quit.')
 
-    def check_game_status(self):
+    def _check_game_status(self):
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -84,76 +91,64 @@ class GameRenderer(object):
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
         try:
-            status = self.char_dict[readable_char]()
+            status = self._char_to_command_dict[readable_char]()
+        # Ignore any other button presses
         except KeyError:
-            status = 1 # Don't care about other keyboard presses
+            status = self.IGNORE
 
-        if self.game_board.all_revealed():
-            status = 4
+        if self._game_board.all_revealed():
+            status = self.VICTORY
 
         return status
 
-    def move_up(self):
-        if not self.game_board.is_top_border(self.cursor_pos):
-            self.cursor_pos -= self.game_board.cols
-            return 2
-        return 1
+    def _move_up(self):
+        if not self._game_board.is_top_border(self._cursor_pos):
+            self._cursor_pos -= self._game_board.cols()
+        return self.IN_PROGRESS
 
-    def move_left(self):
-        if not self.game_board.is_left_border(self.cursor_pos):
-            self.cursor_pos -= 1
-            return 2
-        return 1
+    def _move_left(self):
+        if not self._game_board.is_left_border(self._cursor_pos):
+            self._cursor_pos -= 1
+        return self.IN_PROGRESS
 
-    def move_down(self):
-        if not self.game_board.is_bottom_border(self.cursor_pos):
-            self.cursor_pos += self.game_board.cols
-            return 2
-        return 1
+    def _move_down(self):
+        if not self._game_board.is_bottom_border(self._cursor_pos):
+            self._cursor_pos += self._game_board.cols()
+        return self.IN_PROGRESS
 
-    def move_right(self):
-        if not self.game_board.is_right_border(self.cursor_pos):
-            self.cursor_pos += 1
-            return 2
-        return 1
+    def _move_right(self):
+        if not self._game_board.is_right_border(self._cursor_pos):
+            self._cursor_pos += 1
+        return self.IN_PROGRESS
 
-    def make_guess(self):
-        if self.game_board.get_value(self.cursor_pos) == '0':
-            self.reveal_adjacent_blanks()
-        elif self.game_board.get_value(self.cursor_pos) == 'mine':
-            return 3
-        else:
-            original = self.game_board.get_value(self.cursor_pos)
-            if 'flag' in original:
-                original = original[4:]
-            self.game_board.set_value(self.cursor_pos, str(-1 * int(original)))
-        return 2
+    def _make_guess(self):
+        if not self._game_board.spaces[self._cursor_pos].is_revealed() and \
+            self._game_board.spaces[self._cursor_pos].is_blank():
+            self._reveal_adjacent_blanks()
+        elif self._game_board.spaces[self._cursor_pos].is_mine():
+            return self.LOSS
+        elif not self._game_board.spaces[self._cursor_pos].is_revealed():
+            self._game_board.spaces[self._cursor_pos].reveal()
+        return self.IN_PROGRESS
 
-    def reveal_adjacent_blanks(self):
+    def _reveal_adjacent_blanks(self):
         blanks_left = True
-        self.game_board.set_value(self.cursor_pos, ' ')
+        self._game_board.spaces[self._cursor_pos].reveal()
         while blanks_left:
             blanks_left = False
-            for space in range(self.game_board.size):
-                adjacent_spaces = self.game_board.get_adjacent_space_values(space)
-                if ' ' in adjacent_spaces:
-                    if self.game_board.is_unrevealed_blank(space):
-                        self.game_board.set_value(space, ' ')
-                        blanks_left = True
-                    # Reveal numbers adjacent to spaces too
-                    if self.game_board.is_unrevealed(space):
-                        number = -1 * int(self.game_board.get_value(space))
-                        self.game_board.set_value(space, str(number))
-                        blanks_left = True
+            for space in range(self._game_board.size()):
+                if self._game_board.has_adjacent_revealed_blank(space) and not \
+                    self._game_board.spaces[space].is_revealed():
+                    self._game_board.spaces[space].reveal()
+                    blanks_left = True
 
-    def set_flag(self):
-        if 'flag' in self.game_board.get_value(self.cursor_pos):
-            original = self.game_board.get_value(self.cursor_pos)[4:]
-            self.game_board.set_value(self.cursor_pos, original)
+    def _set_flag(self):
+        if self._game_board.spaces[self._cursor_pos].is_flag():
+            self._game_board.spaces[self._cursor_pos].remove_flag()
         else:
-            original = self.game_board.get_value(self.cursor_pos)
-            self.game_board.set_value(self.cursor_pos, 'flag' + original)
-        return 2
+            self._game_board.spaces[self._cursor_pos].set_flag()
 
-    def quit_game(self):
-        return 0
+        return self.IN_PROGRESS
+
+    def _quit_game(self):
+        return self.QUIT

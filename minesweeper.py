@@ -33,7 +33,9 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--columns', '--cols', help='The number of columns', type=int)
     parser.add_argument('-m', '--mines', help='The number of mines', type=int)
     args = parser.parse_args()
+
     try:
         main(args)
     except Exception as error:
-        print('Unexpected Exception: {}'.format(error))
+       print('\nUnexpected Exception: {}'.format(error))
+
