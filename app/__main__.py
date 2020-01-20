@@ -11,10 +11,7 @@ from game_renderer import GameRenderer
 
 def main(args):
     try:
-        if len(sys.argv) < 7:
-            board = GameBoard(rows=20, cols=20, mines=40)
-        else:
-            board = GameBoard(rows=args.rows, cols=args.columns, mines=args.mines)
+        board = GameBoard(rows=args.rows, cols=args.cols, mines=args.mines)
     except RuntimeError as error:
         print(error)
         sys.exit(1)
@@ -28,9 +25,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Terminal Minesweeper Game')
-    parser.add_argument('-r', '--rows', help='The number of rows', type=int)
-    parser.add_argument('-c', '--columns', '--cols', help='The number of columns', type=int)
-    parser.add_argument('-m', '--mines', help='The number of mines', type=int)
+    parser.add_argument('-r', '--rows', help='Set the number of rows', type=int, default=20)
+    parser.add_argument('-c', '--cols', help='Set the number of columns', type=int, default=20)
+    parser.add_argument('-m', '--mines', help='Set the number of mines', type=int, default=40)
     args = parser.parse_args()
 
     try:
