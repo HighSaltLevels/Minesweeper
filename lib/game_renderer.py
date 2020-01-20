@@ -24,6 +24,7 @@ class GameRenderer(object):
         self.IGNORE = 4
 
     def play_game(self):
+        start_time = time.time()
         self._display_board() 
         while True:
             game_status = self._check_game_status()
@@ -41,6 +42,11 @@ class GameRenderer(object):
                 break
 
             time.sleep(0.01)
+        self._display_finish_time(start_time)
+
+    def _display_finish_time(self, start_time):
+        time_diff = time.time() - start_time
+        print(f'\n\nFinished in {time_diff} seconds')
 
     def _display_board(self, show_mines=False):
         position = 0
@@ -65,6 +71,8 @@ class GameRenderer(object):
                 position += 1
             sys.stdout.write('|\n')
         self._print_instructions()
+        if not show_mines:
+            self._print_mines_left()
         sys.stdout.flush()
 
     def _clear_board(self):
@@ -76,6 +84,10 @@ class GameRenderer(object):
         sys.stdout.write('Place a flag (?) by pressing the Space Bar.\n')
         sys.stdout.write('Make a guess by pressing Enter.\n')
         sys.stdout.write('Press \'q\' at any time to quit.')
+
+    def _print_mines_left(self):
+        mines_left = self._game_board.mines() - self._game_board.get_num_flags()
+        sys.stdout.write(f'\n\nMines left = {mines_left}')
 
     def _check_game_status(self):
         fd = sys.stdin.fileno()
