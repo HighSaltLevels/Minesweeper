@@ -12,7 +12,7 @@ from game_renderer import GameRenderer
 def main(args):
     try:
         if len(sys.argv) < 7:
-            board = GameBoard(rows=20, cols=20, mines=60)
+            board = GameBoard(rows=20, cols=20, mines=40)
         else:
             board = GameBoard(rows=args.rows, cols=args.columns, mines=args.mines)
     except RuntimeError as error:

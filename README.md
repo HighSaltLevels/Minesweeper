@@ -11,15 +11,15 @@ To see the help message, you can just run:
 python3 app --help
 ```
 
-You can specify how many rows, columns, and mines you want to generate by using the following commands (which are all equivalent). Note that if not all arguments are specified, this program will assume 20 rows, 20 columns and 60 mines.
+You can specify how many rows, columns, and mines you want to generate by using the following commands (which are all equivalent). Note that if not all arguments are specified, this program will assume 20 rows, 20 columns and 40 mines.
 ```
-python3 app -r 20 -c 20 -m 60
-```
-```
-python3 app --rows 20 --columns 20 --mines 60
+python3 app -r 20 -c 20 -m 40
 ```
 ```
-python3 app --rows 20 --cols 20 --mines 60
+python3 app --rows 20 --columns 20 --mines 40
+```
+```
+python3 app --rows 20 --cols 20 --mines 40
 ```
 
 ## To Modify and Release a single executable
