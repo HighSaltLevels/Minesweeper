@@ -6,7 +6,7 @@ class GameBoard(object):
 
     def __init__(self, rows, cols, mines):
         if mines >= (rows*cols):
-            raise RuntimeError('Too many mines. You must have 1 less mine than the total number of spaces')
+            raise RuntimeError('Too many mines. You must have 1 or less mines than the total number of spaces')
         self._rows = int(rows)
         self._cols = int(cols)
         self._size = rows*cols
