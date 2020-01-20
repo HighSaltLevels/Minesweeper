@@ -38,12 +38,23 @@ class GameBoard(object):
     def cols(self):
         return self._cols
 
+    def mines(self):
+        return self._mines
+
     def all_revealed(self):
         for space in range(self._size):
             if not self.spaces[space].is_revealed() and not self.spaces[space].is_mine():
                 return False
 
         return True
+
+    def get_num_flags(self):
+        num_flags = 0
+        for space in self.spaces:
+            if space.is_flag():
+                num_flags += 1
+
+        return num_flags
 
     def is_left_border(self, space):
         return not space % self._cols
