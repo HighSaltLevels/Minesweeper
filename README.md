@@ -7,7 +7,7 @@ With 2 commands, you can download the most recent version of the binary (version
 wget -O /usr/bin/minesweeper "https://github.com/HighSaltLevels/Minesweeper/releases/download/1.3.0/minesweeper-$(uname -s)-$(uname -m)"
 chmod +x /usr/bin/minesweeper
 ```
-If the above 2 commnds work, then you should be able to play the game from anywhere in your terminal by typing `minesweeper`
+If the above 2 commands work, then you should be able to play the game from anywhere in your terminal by typing `minesweeper`
 
 **NOTE:** This will only work on linux. You're welcome to try running it on Windows, but it _probably_ won't work.
 
