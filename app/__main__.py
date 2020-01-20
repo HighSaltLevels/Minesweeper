@@ -1,31 +1,30 @@
 #!/usr/bin/python3
 import sys
+import os
+
+# Add lib to path
+sys.path.append(os.path.join(sys.path[0], '../lib'))
+
 import argparse
-from exceptions import InvalidGameBoardException
 from game_board import GameBoard
 from game_renderer import GameRenderer
 
 def main(args):
     try:
         if len(sys.argv) < 7:
-            print('WARNING: Not all arguments specified. Defaulting to rows=20, columns=20, mines=40')
-            board = GameBoard(rows=20, cols=20, mines=40)
+            board = GameBoard(rows=20, cols=20, mines=60)
         else:
             board = GameBoard(rows=args.rows, cols=args.columns, mines=args.mines)
-    except InvalidGameBoardException as error:
-        print(str(error))
+    except RuntimeError as error:
+        print(error)
         sys.exit(1)
 
     board.generate_board()
 
     game_renderer = GameRenderer(board)
-    try:
-        game_renderer.play_game()
-    except PermissionError:
-        print('You must play this game as root (or your user must be part of the input group)')
-        sys.exit(1)
+    game_renderer.play_game()
 
-    print('\nThanks for playing :)')
+    print('\n\nThanks for playing :)')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Terminal Minesweeper Game')

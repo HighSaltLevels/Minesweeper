@@ -1,15 +1,14 @@
 class SpaceValue(object):
 
     def __init__(self, value='blank'):
-        self.FLAG_MODIFIER = 110
+        self.FLAG_MODIFIER = 10
         self.BLANK = 0
-        self.MINE = 10
+        self.MINE = 9
         self._revealed = False
         self._space_value_dict = {'mine'  : self.MINE,
                                   'blank' : self.BLANK}
 
-        self.SPACE_VALUE_RANGE = range(-8, 11)
-        self.REVEALED_RANGE = range(9)
+        self.SPACE_VALUE_RANGE = range(10)
 
         self.set_value(value)
 
@@ -25,10 +24,7 @@ class SpaceValue(object):
         return (self._value - self.FLAG_MODIFIER) in self.SPACE_VALUE_RANGE
 
     def reveal(self):
-        if not self.is_revealed():
-            self._revealed = True
-            if not self.is_blank():
-                self.set_value(self._value * -1)
+        self._revealed = True
 
     def set_value(self, value):
         # If it's not in the dict, it's a number (1-8)
@@ -41,6 +37,8 @@ class SpaceValue(object):
         return self._value
 
     def is_mine(self):
+        if self.is_flag():
+            return (self._value - self.FLAG_MODIFIER) == self.MINE
         return self._value == self.MINE
 
     def is_blank(self):

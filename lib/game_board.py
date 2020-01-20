@@ -1,13 +1,12 @@
 import random
 import sys
-from exceptions import InvalidGameBoardException
 from spaces import SpaceValue 
 
 class GameBoard(object):
 
     def __init__(self, rows, cols, mines):
         if mines >= (rows*cols):
-            raise InvalidGameBoardException('Too many mines. You must have 1 less mine than the total number of spaces')
+            raise RuntimeError('Too many mines. You must have 1 less mine than the total number of spaces')
         self._rows = int(rows)
         self._cols = int(cols)
         self._size = rows*cols
@@ -66,6 +65,10 @@ class GameBoard(object):
 
         return False
 
+    def remove_flags(self):
+        for space in self.spaces:
+            space.remove_flag()
+
     def _get_adjacent_space_values(self, space):
         adjacent_space_values = []
         adjacent_space_values.append(self._get_top_left_value(space))
@@ -87,7 +90,7 @@ class GameBoard(object):
                 num_mines += 1
 
         # Use negative numbers to represent unknown number spaces
-        return num_mines * -1 
+        return num_mines 
 
     def _get_top_left_value(self, space):
         if self.is_left_border(space):

@@ -28,12 +28,12 @@ class GameRenderer(object):
         while True:
             game_status = self._check_game_status()
             if game_status == self.IN_PROGRESS:
-                self._display_board(mines=False)
+                self._display_board(show_mines=False)
             elif game_status == self.LOSS:
-                self._display_board(mines=True)
+                self._display_board(show_mines=True)
                 break
             elif game_status == self.VICTORY:
-                self._display_board(mines=True)
+                self._display_board(show_mines=True)
                 sys.stdout.write('\n\nVictory!\n\n')
                 sys.stdout.flush()
                 break
@@ -42,20 +42,17 @@ class GameRenderer(object):
 
             time.sleep(0.01)
 
-    def _display_board(self, mines=False):
+    def _display_board(self, show_mines=False):
         position = 0
         self._clear_board()
         for _ in range(self._game_board.rows()):
             for _ in range(self._game_board.cols()):
                 if position == self._cursor_pos:
                     sys.stdout.write('|#')
-                    position += 1
-                    continue
-
-                if self._game_board.spaces[position].is_flag():
+                elif self._game_board.spaces[position].is_flag():
                     sys.stdout.write('|?')
                 elif self._game_board.spaces[position].is_mine():
-                    sys.stdout.write('|*') if mines else sys.stdout.write('|_')
+                    sys.stdout.write('|*') if show_mines else sys.stdout.write('|_')
                 elif self._game_board.spaces[position].is_revealed() and \
                     self._game_board.spaces[position].is_blank():
                     sys.stdout.write('| ')
@@ -97,6 +94,7 @@ class GameRenderer(object):
             status = self.IGNORE
 
         if self._game_board.all_revealed():
+            self._game_board.remove_flags()
             status = self.VICTORY
 
         return status
@@ -122,10 +120,12 @@ class GameRenderer(object):
         return self.IN_PROGRESS
 
     def _make_guess(self):
+        self._game_board.spaces[self._cursor_pos].remove_flag()
         if not self._game_board.spaces[self._cursor_pos].is_revealed() and \
             self._game_board.spaces[self._cursor_pos].is_blank():
             self._reveal_adjacent_blanks()
         elif self._game_board.spaces[self._cursor_pos].is_mine():
+            self._game_board.remove_flags()
             return self.LOSS
         elif not self._game_board.spaces[self._cursor_pos].is_revealed():
             self._game_board.spaces[self._cursor_pos].reveal()
