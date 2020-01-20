@@ -2,9 +2,9 @@
 This is a simple little minesweeper game that you can play in the terminal. The only dependency is a python interpreter with version >= python3.6.0 as it uses only python builtins.
 
 ## To Install and Run the Binary
-With 2 commands, you can download the most recent version of the binary (version 1.2.0). Please run these commands as root.
+With 2 commands, you can download the most recent version of the binary (version 1.3.0). Please run these commands as root.
 ```bash
-wget -O /usr/bin/minesweeper "https://github.com/HighSaltLevels/Minesweeper/releases/download/1.2.0/minesweeper-$(uname -s)-$(uname -m)"
+wget -O /usr/bin/minesweeper "https://github.com/HighSaltLevels/Minesweeper/releases/download/1.3.0/minesweeper-$(uname -s)-$(uname -m)"
 chmod +x /usr/bin/minesweeper
 ```
 If the above 2 commnds work, then you should be able to play the game from anywhere in your terminal by typing `minesweeper`
