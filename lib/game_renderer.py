@@ -46,7 +46,11 @@ class GameRenderer(object):
 
     def _display_finish_time(self, start_time):
         time_diff = time.time() - start_time
-        print(f'\n\nFinished in {time_diff} seconds')
+        hours, minutes, seconds = self._split_time_from_diff(time_diff)
+        print(f'\n\nFinished in {hours} hours, {minutes} minutes, and {seconds} seconds')
+
+    def _split_time_from_diff(self, time_diff):
+        return int(time_diff / 3600), int((time_diff % 3600) / 60), int((time_diff % 3600) % 60)
 
     def _display_board(self, show_mines=False):
         position = 0
